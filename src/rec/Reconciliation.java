@@ -1,5 +1,8 @@
 package rec;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public class Reconciliation {
     public static String directoryPath;
 
@@ -12,5 +15,20 @@ public class Reconciliation {
         directoryPath = args[0];
         String method = args[1];
         double methodParam = Double.parseDouble(args[2]);
+
+        RootedTree S;
+        try {
+            S = Parser.parseRootedNewick(directoryPath, "S_newick.tree");
+        } catch (Exception exc) {
+            System.out.println("Bad S");
+            return;
+        }
+    }
+
+    // zaokruhlenie double na 7 desatinnych miest
+    static Double round(Double value) {
+        BigDecimal bd = new BigDecimal(Double.toString(value));
+        bd = bd.setScale(7, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 }
