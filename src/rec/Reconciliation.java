@@ -18,7 +18,7 @@ public class Reconciliation {
 
         RootedTree S;
         try {
-            S = Parser.parseRootedNewick(directoryPath, "S_newick.tree");
+            S = Parser.parseRootedTree(directoryPath, "S_newick.tree");
         } catch (Exception exc) {
             System.out.println("Bad S");
             return;
