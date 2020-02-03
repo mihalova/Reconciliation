@@ -23,6 +23,14 @@ public class Reconciliation {
             System.out.println("Bad S");
             return;
         }
+
+        UnrootedTree G = new UnrootedTree();
+        try {
+            G = Parser.parseUnrootedTree(directoryPath, "G_newick.tree");
+        } catch (Exception exc) {
+            System.out.println("Bad G");
+            return;
+        }
     }
 
     // zaokruhlenie double na 7 desatinnych miest

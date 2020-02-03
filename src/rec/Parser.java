@@ -6,6 +6,9 @@ import java.util.Scanner;
 
 public class Parser {
 
+    static UnrootedTree G = new UnrootedTree();
+    static int k = 0;
+
     static RootedTree parseRootedTree(String path, String filename) {
         RootedTree tree = new RootedTree();
 
@@ -98,4 +101,116 @@ public class Parser {
             return node;
         }
     }
+
+    static UnrootedTree parseUnrootedTree(String path, String filename) {
+        try (Scanner s = new Scanner(new File(path + "/" + filename))) {
+            String str = s.nextLine();
+            //najde poslednu zatvorku
+            int i = str.length() - 1;
+            while(str.charAt(i) != ')'){
+                i--;
+            }
+            str = str.substring(1, i);
+            //najde prvu ciarku
+            i = 0;
+            int counter = 0;
+            while(!(str.charAt(i) == ',' && counter == 0)){
+                if(str.charAt(i) == '(') counter++;
+                if(str.charAt(i) == ')') counter--;
+                i++;
+            }
+            int firstCommaIndex = i;
+            i++;
+            //najde druhu ciarku
+            while(!(str.charAt(i) == ',' && counter == 0)){
+                if(str.charAt(i) == '(') counter++;
+                if(str.charAt(i) == ')') counter--;
+                i++;
+            }
+            int secondCommaIndex = i;
+            //vytvorí nodes a hrany
+            UnrootedNode node = new UnrootedNode("node"+k);
+            k++;
+            G.addNode(node);
+            UnrootedNode first = parseUnrootedNode(
+                    str.substring(0, firstCommaIndex), node);
+            UnrootedNode second = parseUnrootedNode(
+                    str.substring(firstCommaIndex + 1, secondCommaIndex), node);
+            UnrootedNode third = parseUnrootedNode(
+                    str.substring(secondCommaIndex + 1), node);
+
+            for (Edge e: first.getEdges()){
+                if(e.otherNode(first).equals(node)){
+                    node.addEdge(e);
+                }
+            }
+            for (Edge e: second.getEdges()){
+                if(e.otherNode(second).equals(node)){
+                    node.addEdge(e);
+                }
+            }
+            for (Edge e: third.getEdges()){
+                if(e.otherNode(third).equals(node)){
+                    node.addEdge(e);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        G.renameNodes();
+        return G;
+    }
+
+    private static UnrootedNode parseUnrootedNode(String str, UnrootedNode nodeFrom) {
+        int colonIndex = str.lastIndexOf(':');
+        Double depth = Double.parseDouble(str.substring(colonIndex + 1));
+        str = str.substring(0, colonIndex);
+        if(!str.startsWith("(")){
+            UnrootedNode node = new UnrootedNode(str);
+            G.addNode(node);
+            Edge edgeFrom = new Edge(node, nodeFrom, depth, depth); //place for interval (depth, depth)
+            G.addEdge(edgeFrom);
+            node.addEdge(edgeFrom);
+            return node;
+        } else {
+            UnrootedNode node = new UnrootedNode("node"+k);
+            k++;
+            G.addNode(node);
+            Edge edgeFrom = new Edge(node, nodeFrom, depth, depth);
+            G.addEdge(edgeFrom);
+            node.addEdge(edgeFrom);
+
+            int i = 1;
+            int counter = 0;
+            while(!(str.charAt(i) == ',' && counter == 0)){
+                if(str.charAt(i) == '(') counter++;
+                if(str.charAt(i) == ')') counter--;
+                i++;
+                if(i == str.length()){
+                    System.err.println("Problem with parsing tree");
+                }
+            }
+
+            int commaIndex = i;
+
+            UnrootedNode first = parseUnrootedNode(
+                    str.substring(1, commaIndex), node);
+            UnrootedNode second = parseUnrootedNode(
+                    str.substring(commaIndex + 1, str.length() - 1), node);
+
+            for (Edge e: first.getEdges()){
+                if(e.otherNode(first).equals(node)){
+                    node.addEdge(e);
+                }
+            }
+            for (Edge e: second.getEdges()){
+                if(e.otherNode(second).equals(node)){
+                    node.addEdge(e);
+                }
+            }
+            return node;
+        }
+    }
+
+
 }
